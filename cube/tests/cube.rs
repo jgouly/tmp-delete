@@ -140,3 +140,16 @@ fn move_d() {
   );
   assert_eq!(move_d, cube);
 }
+
+#[test]
+fn move_b() {
+  let cube = Cube::solved();
+  let cube = cube.apply_move(Move(Face::B, 1));
+  let move_b = Cube::new(
+    [URF, UFL, UBR, DRB, DFR, DLF, ULB, DBL],
+    [0, 0, 2, 1, 0, 0, 1, 2],
+    [UR, UF, UL, BR, DR, DF, DL, BL, FR, FL, UB, DB],
+    [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+  );
+  assert_eq!(move_b, cube);
+}
