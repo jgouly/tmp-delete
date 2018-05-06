@@ -1,3 +1,34 @@
+/// The faces on a 3x3x3 cube.
+pub enum Face {
+  U,
+  R,
+  F,
+  D,
+  B,
+  L,
+}
+
+/// A move on a 3x3x3 cube.
+pub struct Move(pub Face, pub u8);
+
+/// The permutations and orientations representing a move.
+struct MovePerm {
+  cp: &'static [usize; NUM_CORNERS],
+  co: &'static [u8; NUM_CORNERS],
+  ep: &'static [usize; NUM_EDGES],
+  eo: &'static [u8; NUM_EDGES],
+}
+
+/// An array containing the 6 basic moves on a 3x3x3.
+const MOVE_PERMS: [MovePerm; 1] = [MOVE_PERM_U];
+
+const MOVE_PERM_U: MovePerm = MovePerm {
+  cp: &[3, 0, 1, 2, 4, 5, 6, 7],
+  co: &[0; 8],
+  ep: &[3, 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11],
+  eo: &[0; 12],
+};
+
 /// The corners on a 3x3x3 cube.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub enum Corner {
@@ -105,6 +136,34 @@ impl Cube {
     ];
     let eo = [0; NUM_EDGES];
     Cube::new(cp, co, ep, eo)
+  }
+
+  /// Return a new `Cube` after applying `Move` to the current `Cube`.
+  pub fn apply_move(&self, move_: Move) -> Cube {
+    let mp = &MOVE_PERMS[move_.0 as usize];
+    let new = self.apply_move_perm(mp);
+    new.verify().unwrap();
+    new
+  }
+
+  /// Return a new `Cube` after applying `MovePerm` to the current `Cube`.
+  fn apply_move_perm(&self, move_perm: &MovePerm) -> Cube {
+    let mut cp = [Corner::URF; NUM_CORNERS];
+    let mut co = [0; NUM_CORNERS];
+    let mut ep = [Edge::UR; NUM_EDGES];
+    let mut eo = [0; NUM_EDGES];
+
+    for (i, &j) in move_perm.cp.iter().enumerate() {
+      cp[i] = self.cp[j];
+      co[i] = (self.co[j] + move_perm.co[j]) % 3;
+    }
+
+    for (i, &j) in move_perm.ep.iter().enumerate() {
+      ep[i] = self.ep[j];
+      eo[i] = self.eo[j] ^ move_perm.eo[i];
+    }
+
+    Cube { cp, co, ep, eo }
   }
 
   /// Verify that a `Cube` is in a solvable state.

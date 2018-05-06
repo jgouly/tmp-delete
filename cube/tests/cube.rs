@@ -88,3 +88,16 @@ fn invalid_cube() {
     invalid_corner_parity.verify().unwrap_err()
   );
 }
+
+#[test]
+fn move_u() {
+  let cube = Cube::solved();
+  let cube = cube.apply_move(Move(Face::U, 1));
+  let move_u = Cube::new(
+    [UBR, URF, UFL, ULB, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UB, UR, UF, UL, DR, DF, DL, DB, FR, FL, BL, BR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(move_u, cube);
+}
