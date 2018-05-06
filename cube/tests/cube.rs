@@ -192,3 +192,50 @@ fn move_u_prime() {
   );
   assert_eq!(move_u_prime, cube);
 }
+
+#[test]
+fn alg_u2r2() {
+  let mut cube = Cube::solved();
+  for _ in 0..3 {
+    cube = cube.apply_move(Move(Face::U, 2));
+    cube = cube.apply_move(Move(Face::R, 2));
+  }
+  let cube_u2r2 = Cube::new(
+    [URF, UFL, ULB, UBR, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UR, UB, UL, UF, DR, DF, DL, DB, BR, FL, BL, FR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(cube_u2r2, cube);
+}
+
+#[test]
+fn alg_tperm() {
+  let tperm = [
+    Move(Face::R, 1),
+    Move(Face::U, 1),
+    Move(Face::R, 3),
+    Move(Face::U, 3),
+    Move(Face::R, 3),
+    Move(Face::F, 1),
+    Move(Face::R, 2),
+    Move(Face::U, 3),
+    Move(Face::R, 3),
+    Move(Face::U, 3),
+    Move(Face::R, 1),
+    Move(Face::U, 1),
+    Move(Face::R, 3),
+    Move(Face::F, 3),
+  ];
+  let mut cube = Cube::solved();
+  for m in &tperm {
+    cube = cube.apply_move(*m);
+  }
+  let cube_tperm = Cube::new(
+    [UBR, UFL, ULB, URF, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UL, UF, UR, UB, DR, DF, DL, DB, FR, FL, BL, BR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(cube_tperm, cube);
+}

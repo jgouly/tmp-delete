@@ -1,4 +1,5 @@
 /// The faces on a 3x3x3 cube.
+#[derive(Clone, Copy, Debug)]
 pub enum Face {
   U,
   R,
@@ -9,6 +10,7 @@ pub enum Face {
 }
 
 /// A move on a 3x3x3 cube.
+#[derive(Clone, Copy, Debug)]
 pub struct Move(pub Face, pub u8);
 
 /// The permutations and orientations representing a move.
