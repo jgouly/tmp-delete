@@ -20,7 +20,12 @@ struct MovePerm {
 }
 
 /// An array containing the 6 basic moves on a 3x3x3.
-const MOVE_PERMS: [MovePerm; 3] = [MOVE_PERM_U, MOVE_PERM_R, MOVE_PERM_F];
+const MOVE_PERMS: [MovePerm; 4] = [
+  MOVE_PERM_U,
+  MOVE_PERM_R,
+  MOVE_PERM_F,
+  MOVE_PERM_D,
+];
 
 const MOVE_PERM_U: MovePerm = MovePerm {
   cp: &[3, 0, 1, 2, 4, 5, 6, 7],
@@ -41,6 +46,13 @@ const MOVE_PERM_F: MovePerm = MovePerm {
   co: &[1, 2, 0, 0, 2, 1, 0, 0],
   ep: &[0, 9, 2, 3, 4, 8, 6, 7, 1, 5, 10, 11],
   eo: &[0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
+};
+
+const MOVE_PERM_D: MovePerm = MovePerm {
+  cp: &[0, 1, 2, 3, 5, 6, 7, 4],
+  co: &[0; 8],
+  ep: &[0, 1, 2, 3, 5, 6, 7, 4, 8, 9, 10, 11],
+  eo: &[0; 12],
 };
 
 /// The corners on a 3x3x3 cube.
