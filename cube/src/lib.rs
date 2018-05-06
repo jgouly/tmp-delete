@@ -20,12 +20,19 @@ struct MovePerm {
 }
 
 /// An array containing the 6 basic moves on a 3x3x3.
-const MOVE_PERMS: [MovePerm; 1] = [MOVE_PERM_U];
+const MOVE_PERMS: [MovePerm; 2] = [MOVE_PERM_U, MOVE_PERM_R];
 
 const MOVE_PERM_U: MovePerm = MovePerm {
   cp: &[3, 0, 1, 2, 4, 5, 6, 7],
   co: &[0; 8],
   ep: &[3, 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11],
+  eo: &[0; 12],
+};
+
+const MOVE_PERM_R: MovePerm = MovePerm {
+  cp: &[4, 1, 2, 0, 7, 5, 6, 3],
+  co: &[2, 0, 0, 1, 1, 0, 0, 2],
+  ep: &[8, 1, 2, 3, 11, 5, 6, 7, 4, 9, 10, 0],
   eo: &[0; 12],
 };
 
