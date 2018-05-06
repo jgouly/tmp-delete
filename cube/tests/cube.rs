@@ -166,3 +166,29 @@ fn move_l() {
   );
   assert_eq!(move_l, cube);
 }
+
+#[test]
+fn move_u2() {
+  let cube = Cube::solved();
+  let cube = cube.apply_move(Move(Face::U, 2));
+  let move_u2 = Cube::new(
+    [ULB, UBR, URF, UFL, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UL, UB, UR, UF, DR, DF, DL, DB, FR, FL, BL, BR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(move_u2, cube);
+}
+
+#[test]
+fn move_u_prime() {
+  let cube = Cube::solved();
+  let cube = cube.apply_move(Move(Face::U, 3));
+  let move_u_prime = Cube::new(
+    [UFL, ULB, UBR, URF, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UF, UL, UB, UR, DR, DF, DL, DB, FR, FL, BL, BR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(move_u_prime, cube);
+}

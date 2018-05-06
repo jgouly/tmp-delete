@@ -117,7 +117,7 @@ pub const NUM_CORNERS: usize = 8;
 pub const NUM_EDGES: usize = 12;
 
 /// Models a 3x3x3 cube, separating permutation and orientation.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cube {
   cp: [Corner; NUM_CORNERS],
   co: [u8; NUM_CORNERS],
@@ -182,8 +182,9 @@ impl Cube {
 
   /// Return a new `Cube` after applying `Move` to the current `Cube`.
   pub fn apply_move(&self, move_: Move) -> Cube {
+    assert!(move_.1 > 0 && move_.1 < 4);
     let mp = &MOVE_PERMS[move_.0 as usize];
-    let new = self.apply_move_perm(mp);
+    let new = (0..move_.1).fold(*self, |acc, _| acc.apply_move_perm(mp));
     new.verify().unwrap();
     new
   }
