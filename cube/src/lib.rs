@@ -121,10 +121,10 @@ pub const NUM_EDGES: usize = 12;
 /// Models a 3x3x3 cube, separating permutation and orientation.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cube {
-  cp: [Corner; NUM_CORNERS],
-  co: [u8; NUM_CORNERS],
-  ep: [Edge; NUM_EDGES],
-  eo: [u8; NUM_EDGES],
+  pub cp: [Corner; NUM_CORNERS],
+  pub co: [u8; NUM_CORNERS],
+  pub ep: [Edge; NUM_EDGES],
+  pub eo: [u8; NUM_EDGES],
 }
 
 impl Cube {

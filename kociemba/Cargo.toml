@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Joey Gouly <joey.gouly@gmail.com>"]
 
 [dependencies]
+cube = { path = "../cube" }
