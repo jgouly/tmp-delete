@@ -90,6 +90,18 @@ fn invalid_cube() {
 }
 
 #[test]
+fn test_has_valid_parity() {
+  let cube = Cube::new_unchecked(
+    [URF, UFL, ULB, UBR, DFR, DLF, DBL, DRB],
+    [0; NUM_CORNERS],
+    [UF, UR, UL, UB, DR, DF, DL, DB, FR, FL, BL, BR],
+    [0; NUM_EDGES],
+  );
+  assert_eq!(CubeStateErr::ErrParity, cube.verify().unwrap_err());
+  assert!(!cube.has_valid_parity());
+}
+
+#[test]
 fn move_u() {
   let cube = Cube::solved();
   let cube = cube.apply_move(Move(Face::U, 1));

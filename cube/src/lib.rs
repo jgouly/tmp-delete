@@ -254,7 +254,7 @@ impl Cube {
     }
 
     // Check that corner parity and edge parity are equal.
-    if self.edge_parity() != self.corner_parity() {
+    if !self.has_valid_parity() {
       return Err(CubeStateErr::ErrParity);
     }
     Ok(())
@@ -266,6 +266,11 @@ impl Cube {
 
   fn edge_parity(&self) -> bool {
     num_inversions(&self.ep) % 2 != 0
+  }
+
+  /// Check if a `Cube` has valid parity.
+  pub fn has_valid_parity(&self) -> bool {
+    self.edge_parity() == self.corner_parity()
   }
 }
 
