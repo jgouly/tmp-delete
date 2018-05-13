@@ -1,4 +1,4 @@
-use cube::{Cube, Face, Move};
+use cube::{Cube, Edge, Face, Move};
 
 trait Coord {
   /// Number of elements in `Coord`'s transition table.
@@ -61,6 +61,131 @@ impl Coord for COCoord {
   }
 }
 
+/// The G0 UD1 coordinate encodes the position of the four E-slice
+/// edges (FR, FL, BL, BR).
+/// The actual permutation of the slice edges is ignored.
+struct UD1Coord;
+
+impl Coord for UD1Coord {
+  const NUM_ELEMS: usize = 495; // 12 choose 4
+
+  /// Setting the position of the E-slice edges based on the coordinate.
+  ///
+  /// Calculating the positions starts from position 11, and iterates
+  /// down to position 0. At every position (N) the binomial coefficient,
+  /// C(N, K), is calculated.
+  /// If C(N, K) is larger than the current coordinate, N is a slice edge and K
+  /// is reduced by 1.
+  /// If C(N, K) is less than or equal to the coordinate, the coordinate is
+  /// reduced by C(N, K).
+  /// K is initially 3 and is reduced by 1 for each slide edge at
+  /// a position > N. When K becomes negative, the coordinate processing is
+  /// calculation is complete.
+  /// This means that edges at a lower position than the 4th slice edge are
+  /// ignored.
+  ///
+  /// Example:
+  ///
+  ///   Coordinate = 321
+  ///
+  ///   N = 11, K = 3, Coord = 321, C(11, 3) = 165
+  ///   N = 10, K = 3, Coord = 156, C(10, 3) = 120
+  ///   N = 9, K = 3, Coord = 36, C(9, 3) = 84, 84 > 36, N is a slice edge
+  ///   N = 8, K = 2, Coord = 36, C(8, 2) = 28
+  ///   N = 7, K = 2, Coord = 8, C(7, 2) = 21, 21 > 8, N is a slice edge
+  ///   N = 6, K = 1, Coord = 8, C(6, 1) = 6
+  ///   N = 5, K = 1, Coord = 2, C(5, 1) = 6, 6 > 2, N is a slice edge
+  ///   N = 4, K = 0, Coord = 2, C(4, 0) = 1
+  ///   N = 3, K = 0, Coord = 1, C(3, 0) = 1
+  ///   N = 2, K = 0, Coord = 0, C(2, 0) = 1, 1 > 0, N is a slice edge
+  ///
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  ///   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  ///   | - | - | X | - | - | X | - | X | - | X |  - |  - |
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  fn set_coord(cube: &mut Cube, coord: usize) {
+    let mut coord = coord;
+    cube.ep.copy_from_slice(&[Edge::UR; 12]);
+    let slice_edges = [Edge::FR, Edge::FL, Edge::BL, Edge::BR];
+    let mut k = 3;
+    for i in (0..12).rev() {
+      let binomial = choose(i, k);
+      if binomial > coord {
+        cube.ep[i] = slice_edges[k];
+        if k == 0 {
+          break;
+        }
+        k -= 1;
+      } else {
+        coord -= binomial;
+      }
+    }
+
+    // Replace all `UR` edges with edges from the solved edge permutation.
+    // note: This does not affect the coordinate, but creates a valid cube.
+    let solved_ep = Cube::solved().ep;
+    cube
+      .ep
+      .iter_mut()
+      .filter(|&&mut e| e == Edge::UR)
+      .zip(&solved_ep)
+      .for_each(|(x, y)| *x = *y);
+
+    if !cube.has_valid_parity() {
+      // Swap two corners to fix parity.
+      cube.cp.swap(0, 1);
+    }
+    cube.verify().unwrap();
+  }
+
+  /// The UD coordinate is calculated using binomial coefficients.
+  ///
+  /// Calculating the coordinate starts from position 11, and iterates
+  /// down to position 0. At every position (N) that is not a slice edge,
+  /// the binomial coefficient, C(N, K), is summed up to produce the final
+  /// coordinate. K is initially 3 and is reduced by 1 for each slide edge at
+  /// a position > N. When K becomes negative, the calculation is complete.
+  /// This means that edges at a lower position than the 4th slice edge are
+  /// ignored.
+  ///
+  /// Example:
+  ///
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  ///   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  ///   | - | - | X | X | - | - | - | - | X | - | X  | -  |
+  ///   +---+---+---+---+---+---+---+---+---+---+----+----+
+  ///
+  ///   N = 11, K = 3, C(11, 3) = 165
+  ///   N = 10, K -= 1, Slice edge
+  ///   N = 9, K = 2, C(9, 2) = 36
+  ///   N = 8, K -= 1, Slice edge
+  ///   N = 7, K = 1, C(7, 1) = 7
+  ///   N = 6, K = 1, C(6, 1) = 6
+  ///   N = 5, K = 1, C(5, 1) = 5
+  ///   N = 4, K = 1, C(4, 1) = 4
+  ///   N = 3, K -= 1, Slice edge
+  ///   N = 2, K -= 1, Slice edge
+  ///
+  ///   Coordinate = 165 + 36 + 7 + 6 + 5 + 4 = 223
+  fn get_coord(cube: &Cube) -> usize {
+    let mut coord = 0;
+    let mut k = 3;
+    for i in (0..12).rev() {
+      if cube.ep[i] < Edge::FR {
+        coord += choose(i, k);
+      } else {
+        if k == 0 {
+          break;
+        }
+        k -= 1;
+      }
+    }
+    coord
+  }
+}
+
 fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
   let mut v = vec![[0; 6]; T::NUM_ELEMS];
   let turn_counts = [1; 6];
@@ -87,6 +212,20 @@ pub fn get_co_transition_table() -> Vec<[usize; 6]> {
 /// Get the G0 EO transition table.
 pub fn get_eo_transition_table() -> Vec<[usize; 6]> {
   init_transition_table::<EOCoord>()
+}
+
+/// Get the G0 UD1 transition table.
+pub fn get_ud1_transition_table() -> Vec<[usize; 6]> {
+  init_transition_table::<UD1Coord>()
+}
+
+fn factorial(n: usize) -> usize {
+  (1..n + 1).fold(1, |p, n| p * n)
+}
+
+// The binomial coefficient: C(N, K).
+fn choose(n: usize, k: usize) -> usize {
+  factorial(n) / (factorial(k) * factorial(n - k))
 }
 
 #[cfg(test)]
@@ -168,5 +307,22 @@ mod tests {
   #[test]
   fn co_coord_exhaustive() {
     exhaustive_coord_check::<COCoord>();
+  }
+
+  #[test]
+  fn ud1_transition() {
+    let ud1 = get_ud1_transition_table();
+
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::F, 3));
+    assert_eq!(
+      0,
+      ud1[UD1Coord::get_coord(&c)][Face::F as usize]
+    );
+  }
+
+  #[test]
+  fn ud1_coord_exhaustive() {
+    exhaustive_coord_check::<UD1Coord>();
   }
 }
