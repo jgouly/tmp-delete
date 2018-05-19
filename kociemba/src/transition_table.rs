@@ -198,7 +198,7 @@ fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
       let nc = c.apply_move(Move(f, dir));
       let coord = T::get_coord(&nc);
       assert!(coord < T::NUM_ELEMS);
-      v[i][f as usize] = coord;
+      v[i][usize::from(f)] = coord;
     }
   }
   v
@@ -268,7 +268,7 @@ mod tests {
 
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::U, 3));
-    assert_eq!(0, eo[EOCoord::get_coord(&c)][Face::U as usize]);
+    assert_eq!(0, eo[EOCoord::get_coord(&c)][usize::from(Face::U)]);
   }
 
   #[test]
@@ -301,7 +301,7 @@ mod tests {
 
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::F, 3));
-    assert_eq!(0, co[COCoord::get_coord(&c)][Face::F as usize]);
+    assert_eq!(0, co[COCoord::get_coord(&c)][usize::from(Face::F)]);
   }
 
   #[test]
@@ -315,10 +315,7 @@ mod tests {
 
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::F, 3));
-    assert_eq!(
-      0,
-      ud1[UD1Coord::get_coord(&c)][Face::F as usize]
-    );
+    assert_eq!(0, ud1[UD1Coord::get_coord(&c)][usize::from(Face::F)]);
   }
 
   #[test]

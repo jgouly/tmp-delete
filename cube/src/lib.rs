@@ -9,6 +9,19 @@ pub enum Face {
   L,
 }
 
+impl From<Face> for usize {
+  fn from(val: Face) -> usize {
+    match val {
+      Face::U => 0,
+      Face::R => 1,
+      Face::F => 2,
+      Face::D => 3,
+      Face::B => 4,
+      Face::L => 5,
+    }
+  }
+}
+
 /// A move on a 3x3x3 cube.
 #[derive(Clone, Copy, Debug)]
 pub struct Move(pub Face, pub u8);
@@ -185,7 +198,7 @@ impl Cube {
   /// Return a new `Cube` after applying `Move` to the current `Cube`.
   pub fn apply_move(&self, move_: Move) -> Cube {
     assert!(move_.1 > 0 && move_.1 < 4);
-    let mp = &MOVE_PERMS[move_.0 as usize];
+    let mp = &MOVE_PERMS[usize::from(move_.0)];
     let new = (0..move_.1).fold(*self, |acc, _| acc.apply_move_perm(mp));
     new.verify().unwrap();
     new
