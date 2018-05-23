@@ -1,8 +1,14 @@
 use cube::{Cube, Edge, Face, Move};
 
+enum Group {
+  G0,
+}
+
 trait Coord {
   /// Number of elements in `Coord`'s transition table.
   const NUM_ELEMS: usize;
+  /// Which `Group` this `Coord` is defined for.
+  const GROUP: Group;
   /// Modify `Cube` to have the given coordinate.
   fn set_coord(cube: &mut Cube, coord: usize);
   /// Get the coordinate for a given `Cube`.
@@ -16,6 +22,7 @@ struct EOCoord;
 
 impl Coord for EOCoord {
   const NUM_ELEMS: usize = 2048; // 2 ^ 11
+  const GROUP: Group = Group::G0;
 
   fn set_coord(cube: &mut Cube, eo: usize) {
     assert!(eo < Self::NUM_ELEMS);
@@ -42,6 +49,7 @@ struct COCoord;
 
 impl Coord for COCoord {
   const NUM_ELEMS: usize = 2187; // 3 ^ 7
+  const GROUP: Group = Group::G0;
 
   fn set_coord(cube: &mut Cube, co: usize) {
     assert!(co < Self::NUM_ELEMS);
@@ -68,6 +76,7 @@ struct UD1Coord;
 
 impl Coord for UD1Coord {
   const NUM_ELEMS: usize = 495; // 12 choose 4
+  const GROUP: Group = Group::G0;
 
   /// Setting the position of the E-slice edges based on the coordinate.
   ///
