@@ -200,7 +200,7 @@ impl Cube {
     assert!(move_.1 > 0 && move_.1 < 4);
     let mp = &MOVE_PERMS[usize::from(move_.0)];
     let new = (0..move_.1).fold(*self, |acc, _| acc.apply_move_perm(mp));
-    new.verify().unwrap();
+    debug_assert!(new.verify().is_ok());
     new
   }
 
