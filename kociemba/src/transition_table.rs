@@ -229,7 +229,7 @@ pub fn get_ud1_transition_table() -> Vec<[usize; 6]> {
 }
 
 fn factorial(n: usize) -> usize {
-  (1..n + 1).fold(1, |p, n| p * n)
+  (1..n + 1).product()
 }
 
 // The binomial coefficient: C(N, K).
