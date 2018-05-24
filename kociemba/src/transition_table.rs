@@ -2,6 +2,7 @@ use cube::{Cube, Edge, Face, Move};
 
 enum Group {
   G0,
+  G1,
 }
 
 trait Coord {
@@ -195,6 +196,16 @@ impl Coord for UD1Coord {
   }
 }
 
+pub fn get_nth_zero(val: u8, n: u8) -> u8 {
+  let mut val = val;
+  for _ in 0..n {
+    // makes the rightmost 0 bit a 1
+    val |= val + 1;
+  }
+  //let val = val as u8;
+  return (!val).trailing_zeros() as u8;
+}
+
 struct FactorialDigits<I: Iterator<Item = usize>> {
   val: usize,
   len: usize,
@@ -231,9 +242,82 @@ impl<I: Iterator<Item = usize>> Iterator for FactorialDigits<I> {
   }
 }
 
+fn set_perm_coord<P: From<usize>>(perm: &mut [P], coord: usize) {
+  //let mut used_vec = vec![7, 6, 5, 4, 3, 2, 1, 0];
+  //let mut used_vec = vec![0, 1, 2, 3, 4, 5, 6, 7];
+  let mut used_bits = 0u8;
+
+  let digits2 = factorial_digits(coord, perm.len());
+  //let digits2 = FactorialDigits::new(coord, 8);
+  for (i, n) in (0..perm.len()).rev().zip(digits2) {
+    //for (i, n) in (0..8).zip(digits2) {
+    let bit_n = get_nth_zero(used_bits, n as u8) as usize;
+
+    used_bits |= 1 << bit_n;
+
+    perm[i] = (perm.len() - 1 - (bit_n)).into();
+    //perm[i] = (7 - used_vec.remove(n)).into();
+    //println!("n = {}, used_vec = {:?}", n, used_vec);
+    //perm[i] = (used_vec.remove(n)).into();
+    //perm[i] = (bit_n).into();
+  }
+}
+
+/// The number of inversions with regards to the element `i`.
+fn num_inversions_of<P: PartialOrd>(perm: &[P], i: usize) -> usize {
+  if perm.len() <= i {
+    return 0;
+  }
+  let p = &perm[i];
+  perm[..i].iter().filter(|&j| j > p).count()
+  //perm[i..].iter().filter(|&j| j < p).count()
+}
+
+/// A `Iterator` over the number of inversions of each element
+/// of the permutation `perm`.
+fn get_perm_inversions<'a, P: PartialOrd + 'a>(
+  perm: &'a [P],
+) -> impl Iterator<Item = usize> + 'a {
+  (0..perm.len()).map(move |i| num_inversions_of(&perm, i))
+  //(0..perm.len()).rev().map(move |i| num_inversions_of(&perm, i))
+}
+
+/// TODO: sum_i  i! * |{p(j) > p(i) : j < i}|
+fn get_perm_coord<P: PartialOrd + ::std::fmt::Debug>(perm: &[P]) -> usize {
+  //println!("{:?}", get_perm_inversions(perm).collect::<Vec<_>>());
+  get_perm_inversions(perm)
+    .zip((0..).map(factorial))
+    .fold(0, |acc, (f, p)| acc + f * p)
+}
+
+/// The G1 EP coordinate encodes the positions of the U and D edges.
+struct EPCoord;
+
+impl Coord for EPCoord {
+  const NUM_ELEMS: usize = 40320; // 8!
+  const GROUP: Group = Group::G1;
+
+  fn set_coord(cube: &mut Cube, ep: usize) {
+    set_perm_coord(&mut cube.ep[0..8], ep);
+
+    if !cube.has_valid_parity() {
+      // Swap two corners to fix parity.
+      cube.cp.swap(0, 1);
+    }
+    debug_assert!(cube.verify().is_ok());
+  }
+
+  fn get_coord(cube: &Cube) -> usize {
+    get_perm_coord(&cube.ep[0..8])
+  }
+}
+
 fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
   let mut v = vec![[0; 6]; T::NUM_ELEMS];
-  let turn_counts = [1; 6];
+  let turn_counts = match T::GROUP {
+    Group::G0 => [1; 6],
+    Group::G1 => [1, 1, 2, 2, 2, 2],
+  };
   let turns = [Face::U, Face::D, Face::F, Face::B, Face::R, Face::L];
 
   for i in 0..v.len() {
@@ -262,6 +346,11 @@ pub fn get_eo_transition_table() -> Vec<[usize; 6]> {
 /// Get the G0 UD1 transition table.
 pub fn get_ud1_transition_table() -> Vec<[usize; 6]> {
   init_transition_table::<UD1Coord>()
+}
+
+/// Get the G1 EP transition table.
+pub fn get_ep_transition_table() -> Vec<[usize; 6]> {
+  init_transition_table::<EPCoord>()
 }
 
 fn factorial(n: usize) -> usize {
@@ -366,6 +455,20 @@ mod tests {
   #[test]
   fn ud1_coord_exhaustive() {
     exhaustive_coord_check::<UD1Coord>();
+  }
+
+  #[test]
+  fn ep_transition() {
+    let ep = get_ep_transition_table();
+
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::F, 2));
+    assert_eq!(0, ep[EPCoord::get_coord(&c)][usize::from(Face::F)]);
+  }
+
+  #[test]
+  fn ep_coord_exhaustive() {
+    exhaustive_coord_check::<EPCoord>();
   }
 
   #[test]

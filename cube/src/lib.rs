@@ -116,6 +116,26 @@ pub enum Edge {
   BR,
 }
 
+impl From<usize> for Edge {
+  fn from(val: usize) -> Edge {
+    match val {
+      0 => Edge::UR,
+      1 => Edge::UF,
+      2 => Edge::UL,
+      3 => Edge::UB,
+      4 => Edge::DR,
+      5 => Edge::DF,
+      6 => Edge::DL,
+      7 => Edge::DB,
+      8 => Edge::FR,
+      9 => Edge::FL,
+      10 => Edge::BL,
+      11 => Edge::BR,
+      _ => panic!("Invalid edge!"),
+    }
+  }
+}
+
 /// An error for the different invalid cube states.
 #[derive(Debug, PartialEq)]
 pub enum CubeStateErr {
