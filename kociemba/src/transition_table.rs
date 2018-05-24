@@ -195,6 +195,42 @@ impl Coord for UD1Coord {
   }
 }
 
+struct FactorialDigits<I: Iterator<Item = usize>> {
+  val: usize,
+  len: usize,
+  base_iter: I,
+}
+
+fn factorial_digits(
+  val: usize,
+  len: usize,
+) -> FactorialDigits<impl Iterator<Item = usize>> {
+  FactorialDigits {
+    val,
+    len,
+    base_iter: (0..len).map(factorial).rev(),
+  }
+}
+
+impl<I: Iterator<Item = usize>> Iterator for FactorialDigits<I> {
+  type Item = usize;
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.val == 0 && self.len == 0 {
+      None
+    } else {
+      let base = self.base_iter.next().unwrap();
+      let next = self.val / base;
+      self.val %= base;
+
+      if self.len > 0 {
+        self.len -= 1;
+      }
+
+      Some(next)
+    }
+  }
+}
+
 fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
   let mut v = vec![[0; 6]; T::NUM_ELEMS];
   let turn_counts = [1; 6];
@@ -330,5 +366,20 @@ mod tests {
   #[test]
   fn ud1_coord_exhaustive() {
     exhaustive_coord_check::<UD1Coord>();
+  }
+
+  #[test]
+  fn fact_digits() {
+    let digits = factorial_digits(463, 6);
+    assert_eq!(vec![3, 4, 1, 0, 1, 0], digits.collect::<Vec<_>>());
+
+    let digits = factorial_digits(719, 6);
+    assert_eq!(vec![5, 4, 3, 2, 1, 0], digits.collect::<Vec<_>>());
+
+    let digits = factorial_digits(2982, 7);
+    assert_eq!(vec![4, 0, 4, 1, 0, 0, 0], digits.collect::<Vec<_>>());
+
+    let digits = factorial_digits(40319, 8);
+    assert_eq!(vec![7, 6, 5, 4, 3, 2, 1, 0], digits.collect::<Vec<_>>());
   }
 }
