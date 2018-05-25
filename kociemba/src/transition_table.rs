@@ -312,6 +312,27 @@ impl Coord for EPCoord {
   }
 }
 
+/// The G1 CP coordinate encodes the positions of the corners.
+struct CPCoord;
+
+impl Coord for CPCoord {
+  const NUM_ELEMS: usize = 40320; // 8!
+  const GROUP: Group = Group::G1;
+
+  fn set_coord(cube: &mut Cube, cp: usize) {
+    set_perm_coord(&mut cube.cp, cp);
+
+    if !cube.has_valid_parity() {
+      // Swap two edges to fix parity.
+      cube.ep.swap(0, 1);
+    }
+    debug_assert!(cube.verify().is_ok());
+  }
+
+  fn get_coord(cube: &Cube) -> usize {
+    get_perm_coord(&cube.cp)
+  }
+}
 fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
   let mut v = vec![[0; 6]; T::NUM_ELEMS];
   let turn_counts = match T::GROUP {
@@ -353,6 +374,10 @@ pub fn get_ep_transition_table() -> Vec<[usize; 6]> {
   init_transition_table::<EPCoord>()
 }
 
+/// Get the G1 CP transition table.
+pub fn get_cp_transition_table() -> Vec<[usize; 6]> {
+  init_transition_table::<CPCoord>()
+}
 fn factorial(n: usize) -> usize {
   (1..n + 1).product()
 }
@@ -472,6 +497,18 @@ mod tests {
   }
 
   #[test]
+  fn cp_transition() {
+    let cp = get_cp_transition_table();
+
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::F, 2));
+    assert_eq!(0, cp[CPCoord::get_coord(&c)][usize::from(Face::F)]);
+  }
+
+  #[test]
+  fn cp_coord_exhaustive() {
+    exhaustive_coord_check::<CPCoord>();
+  }
   fn fact_digits() {
     let digits = factorial_digits(463, 6);
     assert_eq!(vec![3, 4, 1, 0, 1, 0], digits.collect::<Vec<_>>());

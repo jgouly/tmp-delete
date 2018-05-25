@@ -99,6 +99,22 @@ pub enum Corner {
   DRB,
 }
 
+impl From<usize> for Corner {
+  fn from(val: usize) -> Corner {
+    match val {
+      0 => Corner::URF,
+      1 => Corner::UFL,
+      2 => Corner::ULB,
+      3 => Corner::UBR,
+      4 => Corner::DFR,
+      5 => Corner::DLF,
+      6 => Corner::DBL,
+      7 => Corner::DRB,
+      _ => panic!("Invalid corner!"),
+    }
+  }
+}
+
 /// The edges on a 3x3x3 cube.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub enum Edge {
