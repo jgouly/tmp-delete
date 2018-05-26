@@ -333,6 +333,35 @@ impl Coord for CPCoord {
     get_perm_coord(&cube.cp)
   }
 }
+
+/// The G1 UD2 coordinate encodes the positions of the E-slice edges.
+struct UD2Coord;
+
+impl Coord for UD2Coord {
+  const NUM_ELEMS: usize = 24; // 4!
+  const GROUP: Group = Group::G1;
+
+  fn set_coord(cube: &mut Cube, ud2: usize) {
+    let mut edge_offsets = [0, 1, 2, 3];
+    set_perm_coord(&mut edge_offsets, ud2);
+
+    cube.ep[8..12]
+      .iter_mut()
+      .zip(&edge_offsets)
+      .for_each(|(e, &o)| *e = (8 + o).into());
+
+    if !cube.has_valid_parity() {
+      // Swap two corners to fix parity.
+      cube.cp.swap(0, 1);
+    }
+    debug_assert!(cube.verify().is_ok());
+  }
+
+  fn get_coord(cube: &Cube) -> usize {
+    get_perm_coord(&cube.ep[8..12])
+  }
+}
+
 fn init_transition_table<T: Coord>() -> Vec<[usize; 6]> {
   let mut v = vec![[0; 6]; T::NUM_ELEMS];
   let turn_counts = match T::GROUP {
@@ -378,6 +407,12 @@ pub fn get_ep_transition_table() -> Vec<[usize; 6]> {
 pub fn get_cp_transition_table() -> Vec<[usize; 6]> {
   init_transition_table::<CPCoord>()
 }
+
+/// Get the G1 UD2 transition table.
+pub fn get_ud2_transition_table() -> Vec<[usize; 6]> {
+  init_transition_table::<UD2Coord>()
+}
+
 fn factorial(n: usize) -> usize {
   (1..n + 1).product()
 }
@@ -509,6 +544,22 @@ mod tests {
   fn cp_coord_exhaustive() {
     exhaustive_coord_check::<CPCoord>();
   }
+
+  #[test]
+  fn ud2_transition() {
+    let ud2 = get_ud2_transition_table();
+
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::F, 2));
+    assert_eq!(0, ud2[UD2Coord::get_coord(&c)][usize::from(Face::F)]);
+  }
+
+  #[test]
+  fn ud2_coord_exhaustive() {
+    exhaustive_coord_check::<UD2Coord>();
+  }
+
+  #[test]
   fn fact_digits() {
     let digits = factorial_digits(463, 6);
     assert_eq!(vec![3, 4, 1, 0, 1, 0], digits.collect::<Vec<_>>());
