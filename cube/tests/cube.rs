@@ -251,3 +251,18 @@ fn alg_tperm() {
   );
   assert_eq!(cube_tperm, cube);
 }
+
+#[test]
+fn opposite_face() {
+  let f = Face::F;
+  assert!(f.is_opposite(Face::B));
+  assert!(!f.is_opposite(Face::U));
+
+  let u = Face::U;
+  assert!(u.is_opposite(Face::D));
+  assert!(!u.is_opposite(Face::R));
+
+  let r = Face::R;
+  assert!(r.is_opposite(Face::L));
+  assert!(!r.is_opposite(Face::F));
+}

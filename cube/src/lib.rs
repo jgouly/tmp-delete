@@ -9,6 +9,32 @@ pub enum Face {
   L,
 }
 
+#[derive(PartialEq)]
+enum Slice {
+  E,
+  M,
+  S,
+}
+
+impl Face {
+  fn slice(&self) -> Slice {
+    match self {
+      Face::U => Slice::E,
+      Face::D => Slice::E,
+
+      Face::R => Slice::M,
+      Face::L => Slice::M,
+
+      Face::F => Slice::S,
+      Face::B => Slice::S,
+    }
+  }
+  /// Test if `face` is an opposite `Face`.
+  pub fn is_opposite(&self, face: Face) -> bool {
+    self.slice() == face.slice()
+  }
+}
+
 impl From<Face> for usize {
   fn from(val: Face) -> usize {
     match val {
