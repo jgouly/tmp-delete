@@ -1,11 +1,11 @@
 use cube::{Cube, Edge, Face, Move};
 
-enum Group {
+pub(crate) enum Group {
   G0,
   G1,
 }
 
-trait Coord {
+pub(crate) trait Coord {
   /// Number of elements in `Coord`'s transition table.
   const NUM_ELEMS: usize;
   /// Which `Group` this `Coord` is defined for.
@@ -19,7 +19,7 @@ trait Coord {
 /// The G0 EO coordinate is an 11-bit number where each bit corresponds
 /// to the orientation of the edge at that index. The 12th edge's orientation
 /// is calculated based on the first 11 edge orientations.
-struct EOCoord;
+pub(crate) struct EOCoord;
 
 impl Coord for EOCoord {
   const NUM_ELEMS: usize = 2048; // 2 ^ 11
@@ -46,7 +46,7 @@ impl Coord for EOCoord {
 /// The G0 CO coordinate is 7 digit base-3 number where each digit corresponds
 /// to the orientation of the corner at that index. The 8th corner's orientation
 /// is calculated based on the first 7 corner orientations.
-struct COCoord;
+pub(crate) struct COCoord;
 
 impl Coord for COCoord {
   const NUM_ELEMS: usize = 2187; // 3 ^ 7
@@ -73,7 +73,7 @@ impl Coord for COCoord {
 /// The G0 UD1 coordinate encodes the position of the four E-slice
 /// edges (FR, FL, BL, BR).
 /// The actual permutation of the slice edges is ignored.
-struct UD1Coord;
+pub(crate) struct UD1Coord;
 
 impl Coord for UD1Coord {
   const NUM_ELEMS: usize = 495; // 12 choose 4
