@@ -1,7 +1,10 @@
 extern crate cube;
 
+mod phase0;
 mod pruning_table;
 mod transition_table;
+
+pub use phase0::phase0;
 
 pub use pruning_table::get_co_prune_table;
 pub use pruning_table::get_cp_prune_table;
