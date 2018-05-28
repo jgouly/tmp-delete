@@ -42,6 +42,19 @@ impl<'a> Phase0Tables<'a> {
   }
 }
 
+// Check if a solution is valid.
+fn solution_check(solution: &[Move]) -> bool {
+  let len = solution.len();
+  if len > 0 {
+    match solution[len - 1] {
+      // Phase0 cannot end in U or D.
+      Move(Face::U, _) | Move(Face::D, _) => return false,
+      _ => (),
+    }
+  }
+  true
+}
+
 /// Phase 0: Reduce a cube from G0 to G1.
 pub fn phase0(
   coord: Phase0Coord,
@@ -50,6 +63,9 @@ pub fn phase0(
   solution: &mut Vec<Move>,
 ) -> bool {
   if depth_remaining == 0 {
+    if !solution_check(solution) {
+      return false;
+    }
     return coord.is_solved();
   }
 
@@ -131,7 +147,7 @@ mod tests {
     let c = c.apply_move(Move(Face::R, 1));
     assert!(phase0(c.into(), 2, &tables, &mut solution));
     assert!(match &solution[..] {
-      [Move(Face::R, 1), Move(Face::U, 1)] => true,
+      [Move(Face::R, 1), Move(Face::F, 2)] => true,
       _ => false,
     });
   }
