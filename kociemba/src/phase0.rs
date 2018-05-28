@@ -49,6 +49,8 @@ fn solution_check(solution: &[Move]) -> bool {
     match solution[len - 1] {
       // Phase0 cannot end in U or D.
       Move(Face::U, _) | Move(Face::D, _) => return false,
+      // Phase0 cannot end a half turn.
+      Move(_, 2) => return false,
       _ => (),
     }
   }
@@ -147,7 +149,7 @@ mod tests {
     let c = c.apply_move(Move(Face::R, 1));
     assert!(phase0(c.into(), 2, &tables, &mut solution));
     assert!(match &solution[..] {
-      [Move(Face::R, 1), Move(Face::F, 2)] => true,
+      [Move(Face::R, 2), Move(Face::R, 1)] => true,
       _ => false,
     });
   }
