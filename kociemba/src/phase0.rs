@@ -53,6 +53,16 @@ fn solution_check(solution: &[Move]) -> bool {
       Move(_, 2) => return false,
       _ => (),
     }
+
+    if len > 1 {
+      // Phase 0 cannot end in A2 B, where A and B are opposite faces.
+      match &solution[len - 2..] {
+        &[Move(f1, 2), Move(f2, _)] if f1.is_opposite(f2) => {
+          return false;
+        }
+        _ => (),
+      }
+    }
   }
   true
 }
@@ -163,10 +173,6 @@ mod tests {
     let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::R, 1));
-    assert!(phase0(c.into(), 2, &tables, &mut solution));
-    assert!(match &solution[..] {
-      [Move(Face::L, 2), Move(Face::R, 1)] => true,
-      _ => false,
-    });
+    assert!(!phase0(c.into(), 2, &tables, &mut solution));
   }
 }
