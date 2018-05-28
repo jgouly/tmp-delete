@@ -125,5 +125,14 @@ mod tests {
       [Move(Face::R, 3), Move(Face::F, 2), Move(Face::R, 1)] => true,
       _ => false,
     });
+
+    let mut solution = vec![];
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::R, 1));
+    assert!(phase0(c.into(), 2, &tables, &mut solution));
+    assert!(match &solution[..] {
+      [Move(Face::R, 1), Move(Face::U, 1)] => true,
+      _ => false,
+    });
   }
 }
