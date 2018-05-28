@@ -1,4 +1,4 @@
-use cube::{Cube, Face};
+use cube::{Cube, Face, Move};
 use transition_table::COCoord;
 use transition_table::Coord;
 use transition_table::EOCoord;
@@ -47,6 +47,7 @@ pub fn phase0(
   coord: Phase0Coord,
   depth_remaining: usize,
   tables: &Phase0Tables,
+  solution: &mut Vec<Move>,
 ) -> bool {
   if depth_remaining == 0 {
     return coord.is_solved();
@@ -54,11 +55,13 @@ pub fn phase0(
 
   for &f in &[Face::U, Face::D, Face::F, Face::B, Face::R, Face::L] {
     let mut next = coord;
-    for _ in 0..3 {
+    for i in 0..3 {
       next = tables.transition(next, f);
-      if phase0(next, depth_remaining - 1, tables) {
+      solution.push(Move(f, i + 1));
+      if phase0(next, depth_remaining - 1, tables, solution) {
         return true;
       }
+      solution.pop();
     }
   }
   false
@@ -67,7 +70,6 @@ pub fn phase0(
 #[cfg(test)]
 mod tests {
   use super::*;
-  use cube::Move;
   use transition_table::*;
 
   #[test]
@@ -82,29 +84,46 @@ mod tests {
       ud1_t: &ud1_t,
     };
 
+    let mut solution = vec![];
     let c = Cube::solved();
-    assert!(phase0(c.into(), 0, &tables));
+    assert!(phase0(c.into(), 0, &tables, &mut solution));
 
+    let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::U, 1));
-    assert!(phase0(c.into(), 0, &tables));
+    assert!(phase0(c.into(), 0, &tables, &mut solution));
 
+    let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::F, 1));
-    assert!(!phase0(c.into(), 0, &tables));
-    assert!(phase0(c.into(), 1, &tables));
+    assert!(!phase0(c.into(), 0, &tables, &mut solution));
+    assert!(phase0(c.into(), 1, &tables, &mut solution));
+    assert!(match &solution[..] {
+      [Move(Face::F, 1)] => true,
+      _ => false,
+    });
 
+    let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::F, 3));
     let c = c.apply_move(Move(Face::R, 3));
-    assert!(!phase0(c.into(), 0, &tables));
-    assert!(!phase0(c.into(), 1, &tables));
-    assert!(phase0(c.into(), 2, &tables));
+    assert!(!phase0(c.into(), 0, &tables, &mut solution));
+    assert!(!phase0(c.into(), 1, &tables, &mut solution));
+    assert!(phase0(c.into(), 2, &tables, &mut solution));
+    assert!(match &solution[..] {
+      [Move(Face::R, 1), Move(Face::F, 1)] => true,
+      _ => false,
+    });
 
+    let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::R, 1));
     let c = c.apply_move(Move(Face::F, 2));
     let c = c.apply_move(Move(Face::R, 1));
-    assert!(phase0(c.into(), 3, &tables));
+    assert!(phase0(c.into(), 3, &tables, &mut solution));
+    assert!(match &solution[..] {
+      [Move(Face::R, 3), Move(Face::F, 2), Move(Face::R, 1)] => true,
+      _ => false,
+    });
   }
 }
