@@ -53,9 +53,12 @@ pub fn phase0(
   }
 
   for &f in &[Face::U, Face::D, Face::F, Face::B, Face::R, Face::L] {
-    let next = tables.transition(coord, f);
-    if phase0(next, depth_remaining - 1, tables) {
-      return true;
+    let mut next = coord;
+    for _ in 0..3 {
+      next = tables.transition(next, f);
+      if phase0(next, depth_remaining - 1, tables) {
+        return true;
+      }
     }
   }
   false
@@ -97,5 +100,11 @@ mod tests {
     assert!(!phase0(c.into(), 0, &tables));
     assert!(!phase0(c.into(), 1, &tables));
     assert!(phase0(c.into(), 2, &tables));
+
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::R, 1));
+    let c = c.apply_move(Move(Face::F, 2));
+    let c = c.apply_move(Move(Face::R, 1));
+    assert!(phase0(c.into(), 3, &tables));
   }
 }
