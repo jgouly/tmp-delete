@@ -76,6 +76,16 @@ fn skip_face(solution: &[Move], face: Face) -> bool {
       Move(previous_face, _) if previous_face == face => return true,
       _ => (),
     }
+
+    if len > 1 {
+      // Check for A B A where A and B are opposite faces.
+      match &solution[len - 2..] {
+        &[Move(f1, _), Move(f2, _)] if f1.is_opposite(f2) && f1 == face => {
+          return true;
+        }
+        _ => (),
+      }
+    }
   }
   false
 }
@@ -205,7 +215,7 @@ mod tests {
     let mut solution = vec![];
     assert!(phase0(c.into(), 5, &tables, &mut solution));
     assert!(match &solution[..] {
-      [Move(Face::U, 1), Move(Face::D, 2), Move(Face::U, 1), Move(Face::R, 1), Move(Face::L, 1)] => {
+      [Move(Face::U, 2), Move(Face::D, 2), Move(Face::F, 2), Move(Face::R, 1), Move(Face::L, 1)] => {
         true
       }
       _ => false,
