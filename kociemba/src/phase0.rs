@@ -57,6 +57,19 @@ fn solution_check(solution: &[Move]) -> bool {
   true
 }
 
+// Check if a face should be skipped.
+fn skip_face(solution: &[Move], face: Face) -> bool {
+  let len = solution.len();
+  if len > 0 {
+    // Check for A A.
+    match solution[len - 1] {
+      Move(previous_face, _) if previous_face == face => return true,
+      _ => (),
+    }
+  }
+  false
+}
+
 /// Phase 0: Reduce a cube from G0 to G1.
 pub fn phase0(
   coord: Phase0Coord,
@@ -72,6 +85,9 @@ pub fn phase0(
   }
 
   for &f in &[Face::U, Face::D, Face::F, Face::B, Face::R, Face::L] {
+    if skip_face(solution, f) {
+      continue;
+    }
     let mut next = coord;
     for i in 0..3 {
       next = tables.transition(next, f);
@@ -149,7 +165,7 @@ mod tests {
     let c = c.apply_move(Move(Face::R, 1));
     assert!(phase0(c.into(), 2, &tables, &mut solution));
     assert!(match &solution[..] {
-      [Move(Face::R, 2), Move(Face::R, 1)] => true,
+      [Move(Face::L, 2), Move(Face::R, 1)] => true,
       _ => false,
     });
   }

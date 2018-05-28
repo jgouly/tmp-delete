@@ -1,5 +1,5 @@
 /// The faces on a 3x3x3 cube.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Face {
   U,
   R,
