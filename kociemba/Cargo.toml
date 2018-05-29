@@ -5,3 +5,6 @@ authors = ["Joey Gouly <joey.gouly@gmail.com>"]
 
 [dependencies]
 cube = { path = "../cube" }
+
+[dev-dependencies]
+lazy_static = "1.0"

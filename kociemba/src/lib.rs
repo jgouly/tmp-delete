@@ -1,5 +1,9 @@
 extern crate cube;
 
+#[cfg(test)]
+#[macro_use]
+extern crate lazy_static;
+
 mod phase0;
 mod pruning_table;
 mod transition_table;
