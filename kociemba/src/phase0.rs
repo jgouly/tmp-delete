@@ -164,16 +164,23 @@ mod tests {
     };
   }
 
+  fn check_is_solved(cube: Cube, solution: &[Move]) -> bool {
+    let solved = solution.iter().fold(cube, |acc, &cur| acc.apply_move(cur));
+    Phase0Coord::from(solved).is_solved()
+  }
+
   #[test]
   fn basic() {
     let mut solution = vec![];
     let c = Cube::solved();
     assert!(phase0(c.into(), 0, &PHASE0TABLES, &mut solution));
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
     let c = c.apply_move(Move(Face::U, 1));
     assert!(phase0(c.into(), 0, &PHASE0TABLES, &mut solution));
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
@@ -184,6 +191,7 @@ mod tests {
       [Move(Face::F, 1)] => true,
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
@@ -196,6 +204,7 @@ mod tests {
       [Move(Face::R, 1), Move(Face::F, 1)] => true,
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
@@ -207,6 +216,7 @@ mod tests {
       [Move(Face::R, 3), Move(Face::F, 2), Move(Face::R, 1)] => true,
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
@@ -222,6 +232,7 @@ mod tests {
       [Move(Face::R, 2), Move(Face::B, 1)] => true,
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
     let mut solution = vec![];
     assert!(phase0(c.into(), 4, &PHASE0TABLES, &mut solution));
     assert!(match &solution[..] {
@@ -230,6 +241,7 @@ mod tests {
       }
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
 
     let mut solution = vec![];
     let c = Cube::solved();
@@ -240,6 +252,7 @@ mod tests {
       [Move(Face::R, 1), Move(Face::L, 1)] => true,
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
     let mut solution = vec![];
     assert!(phase0(c.into(), 5, &PHASE0TABLES, &mut solution));
     assert!(match &solution[..] {
@@ -248,6 +261,7 @@ mod tests {
       }
       _ => false,
     });
+    assert!(check_is_solved(c, &solution));
   }
 
   #[test]
