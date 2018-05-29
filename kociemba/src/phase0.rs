@@ -1,4 +1,5 @@
 use cube::{Cube, Face, Move};
+use std::cmp::max;
 use transition_table::COCoord;
 use transition_table::Coord;
 use transition_table::EOCoord;
@@ -31,14 +32,27 @@ pub struct Phase0Tables<'a> {
   eo_t: &'a [[usize; 6]],
   co_t: &'a [[usize; 6]],
   ud1_t: &'a [[usize; 6]],
+  eo_p: &'a [usize],
+  co_p: &'a [usize],
+  ud1_p: &'a [usize],
 }
 
 impl<'a> Phase0Tables<'a> {
+  // The new `Phase0Coord` after doing the `face` move.
+  // note: This only does quarter turns.
   fn transition(&self, coord: Phase0Coord, face: Face) -> Phase0Coord {
     let eo = self.eo_t[coord.eo][usize::from(face)];
     let co = self.co_t[coord.co][usize::from(face)];
     let ud1 = self.ud1_t[coord.ud1][usize::from(face)];
     Phase0Coord { eo, co, ud1 }
+  }
+
+  // The maximum prune depth for `coord`.
+  fn prune_depth(&self, coord: Phase0Coord) -> usize {
+    max(
+      self.eo_p[coord.eo],
+      max(self.co_p[coord.co], self.ud1_p[coord.ud1]),
+    )
   }
 }
 
@@ -104,6 +118,10 @@ pub fn phase0(
     return coord.is_solved();
   }
 
+  if depth_remaining < tables.prune_depth(coord) {
+    return false;
+  }
+
   for &f in &[Face::U, Face::D, Face::F, Face::B, Face::R, Face::L] {
     if skip_face(solution, f) {
       continue;
@@ -124,17 +142,24 @@ pub fn phase0(
 #[cfg(test)]
 mod tests {
   use super::*;
+  use pruning_table::*;
   use transition_table::*;
 
   lazy_static! {
     static ref CO_T: Vec<[usize; 6]> = { get_co_transition_table() };
     static ref EO_T: Vec<[usize; 6]> = { get_eo_transition_table() };
     static ref UD1_T: Vec<[usize; 6]> = { get_ud1_transition_table() };
+    static ref CO_P: Box<[usize]> = { get_co_prune_table(&CO_T) };
+    static ref EO_P: Box<[usize]> = { get_eo_prune_table(&EO_T) };
+    static ref UD1_P: Box<[usize]> = { get_ud1_prune_table(&UD1_T) };
     static ref PHASE0TABLES: Phase0Tables<'static> = {
       Phase0Tables {
         co_t: &CO_T,
         eo_t: &EO_T,
         ud1_t: &UD1_T,
+        co_p: &CO_P,
+        eo_p: &EO_P,
+        ud1_p: &UD1_P,
       }
     };
   }
@@ -223,5 +248,33 @@ mod tests {
       }
       _ => false,
     });
+  }
+
+  #[test]
+  fn prune() {
+    // CO and UD1 require 2 moves.
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::R, 1));
+    let c = c.apply_move(Move(Face::U, 1));
+    assert_eq!(2, PHASE0TABLES.prune_depth(c.into()));
+
+    // CO depth is 4 moves, UD1 is 3 moves (F' U F).
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::R, 1));
+    let c = c.apply_move(Move(Face::U, 1));
+    let c = c.apply_move(Move(Face::R, 3));
+    let c = c.apply_move(Move(Face::U, 3));
+    assert_eq!(4, PHASE0TABLES.prune_depth(c.into()));
+
+    // CO depth is 5 moves (F2 U2 R' U F), EO and UD1 are 0 moves.
+    let c = Cube::solved();
+    let c = c.apply_move(Move(Face::R, 1));
+    let c = c.apply_move(Move(Face::U, 1));
+    let c = c.apply_move(Move(Face::R, 3));
+    let c = c.apply_move(Move(Face::U, 1));
+    let c = c.apply_move(Move(Face::R, 1));
+    let c = c.apply_move(Move(Face::U, 2));
+    let c = c.apply_move(Move(Face::R, 3));
+    assert_eq!(5, PHASE0TABLES.prune_depth(c.into()));
   }
 }
