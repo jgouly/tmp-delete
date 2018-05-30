@@ -291,7 +291,7 @@ fn get_perm_coord<P: PartialOrd + ::std::fmt::Debug>(perm: &[P]) -> usize {
 }
 
 /// The G1 EP coordinate encodes the positions of the U and D edges.
-struct EPCoord;
+pub(crate) struct EPCoord;
 
 impl Coord for EPCoord {
   const NUM_ELEMS: usize = 40320; // 8!
@@ -313,7 +313,7 @@ impl Coord for EPCoord {
 }
 
 /// The G1 CP coordinate encodes the positions of the corners.
-struct CPCoord;
+pub(crate) struct CPCoord;
 
 impl Coord for CPCoord {
   const NUM_ELEMS: usize = 40320; // 8!
@@ -335,7 +335,7 @@ impl Coord for CPCoord {
 }
 
 /// The G1 UD2 coordinate encodes the positions of the E-slice edges.
-struct UD2Coord;
+pub(crate) struct UD2Coord;
 
 impl Coord for UD2Coord {
   const NUM_ELEMS: usize = 24; // 4!

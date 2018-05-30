@@ -5,10 +5,12 @@ extern crate cube;
 extern crate lazy_static;
 
 mod phase0;
+mod phase1;
 mod pruning_table;
 mod transition_table;
 
 pub use phase0::phase0;
+pub use phase1::phase1;
 
 pub use pruning_table::get_co_prune_table;
 pub use pruning_table::get_cp_prune_table;
